@@ -47,12 +47,13 @@ export async function fetchTickets(): Promise<Ticket[]> {
       createdAt: c.created_at,
       edited: c.edited || false,
     })),
+    // In lib/api.ts, update the audit transformation:
     audit: (row.audit || []).map((a: any) => ({
       id: a.id,
-      action: a.action,
-      actor: a.actor,
-      actorRole: a.actor_role as any,
-      timestamp: a.timestamp || a.created_at,
+      action: a.action || "updated",
+      actor: a.actor || "System",
+      actorRole: a.actor_role || "system", // Ensure this is never null
+      timestamp: a.timestamp || a.created_at || new Date().toISOString(),
       details: a.details || {},
       fieldChanged: a.field_changed,
       oldValue: a.old_value,
