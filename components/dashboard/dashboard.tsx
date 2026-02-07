@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { User } from '@/lib/types'
-import CitizenPortal from '@/components/portals/citizen-portal'
-import FieldStaffInterface from '@/components/portals/field-staff-interface'
+import CitizenPortalEnhanced from '@/components/portals/citizen-portal-enhanced'
+import FieldStaffEnhanced from '@/components/portals/field-staff-enhanced'
 import OfficerDashboard from '@/components/portals/officer-dashboard'
-import AdminAnalytics from '@/components/portals/admin-analytics'
+import AdminDashboardEnhanced from '@/components/portals/admin-dashboard-enhanced'
 import NavigationBar from '@/components/navigation/navigation-bar'
 
 interface DashboardProps {
@@ -19,15 +19,15 @@ export default function Dashboard({ currentUser, onLogout }: DashboardProps) {
   const renderContent = () => {
     switch (currentUser.role) {
       case 'citizen':
-        return <CitizenPortal currentUser={currentUser} onNavigate={setCurrentView} currentView={currentView} />
+        return <CitizenPortalEnhanced currentUser={currentUser} onNavigate={setCurrentView} currentView={currentView} />
       case 'field_staff':
-        return <FieldStaffInterface currentUser={currentUser} onNavigate={setCurrentView} currentView={currentView} />
+        return <FieldStaffEnhanced currentUser={currentUser} onLogout={onLogout} />
       case 'officer':
         return <OfficerDashboard currentUser={currentUser} onNavigate={setCurrentView} currentView={currentView} />
       case 'admin':
-        return <AdminAnalytics currentUser={currentUser} onNavigate={setCurrentView} currentView={currentView} />
+        return <AdminDashboardEnhanced currentUser={currentUser} onLogout={onLogout} />
       default:
-        return <CitizenPortal currentUser={currentUser} onNavigate={setCurrentView} currentView={currentView} />
+        return <CitizenPortalEnhanced currentUser={currentUser} onNavigate={setCurrentView} currentView={currentView} />
     }
   }
 
