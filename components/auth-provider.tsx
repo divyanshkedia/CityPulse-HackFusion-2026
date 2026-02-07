@@ -20,7 +20,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Helper to fetch role from 'profiles' table
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
@@ -33,13 +32,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Check active session on mount
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
           const profile = await fetchUserProfile(session.user.id)
-          
           if (profile) {
             setUser({
               id: session.user.id,
@@ -47,7 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               email: session.user.email!,
               role: profile.role as UserRole, 
               department: 'General',
-              // FIXED: Added missing properties
               createdAt: session.user.created_at || new Date().toISOString(),
               lastLogin: new Date().toISOString() 
             })
@@ -62,12 +58,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     checkSession()
 
-    // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         let profile = await fetchUserProfile(session.user.id)
-        
-        // Retry logic for race conditions on signup
         if (!profile) {
            await new Promise(r => setTimeout(r, 500))
            profile = await fetchUserProfile(session.user.id)
@@ -80,12 +73,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: session.user.email!,
             role: profile.role as UserRole,
             department: 'General',
-            // FIXED: Added missing properties here too
             createdAt: session.user.created_at || new Date().toISOString(),
             lastLogin: new Date().toISOString()
           })
         }
       } else {
+        // If the event is SIGNED_OUT, we ensure user is null
         setUser(null)
         if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
             setLoading(false) 
@@ -117,10 +110,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
+  // --- UPDATED SIGNOUT FUNCTION ---
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    router.push('/')
+    try {
+      console.log("Signing out...") // Debug log
+      setUser(null) // 1. Clear state IMMEDIATELY to trigger UI change
+      await supabase.auth.signOut() // 2. Tell Supabase to kill session
+      router.refresh() // 3. Force refresh to clear any server cache
+      router.push('/') // 4. Go to home
+    } catch (error) {
+      console.error("Logout error", error)
+      setUser(null) // Force logout even if error
+      router.push('/')
+    }
   }
 
   return (
