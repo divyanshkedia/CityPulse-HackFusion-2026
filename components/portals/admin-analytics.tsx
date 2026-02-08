@@ -16,7 +16,8 @@ import { fetchTickets } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import AuditTimeline from '@/components/tickets/audit-timeline'
-import { Download, BarChart3, TrendingUp, Users, Calendar, RefreshCw } from 'lucide-react'
+import { Download, BarChart3, TrendingUp, Users, Calendar, RefreshCw, Brain } from 'lucide-react'
+
 import './AdminAnalytics.css' // Import CSS file
 
 interface AdminAnalyticsProps {
@@ -77,9 +78,9 @@ export default function AdminAnalytics({ currentUser, onNavigate, currentView }:
     // Calculate Avg Resolution Time
     let totalResolutionTime = 0
     resolvedTickets.forEach(t => {
-      if (t.resolvedAt) {
+      if (t.resolved_at) {
         const start = new Date(t.reportedAt).getTime()
-        const end = new Date(t.resolvedAt).getTime()
+        const end = new Date(t.resolved_at).getTime()
         totalResolutionTime += (end - start) / (1000 * 60 * 60) // Hours
       }
     })
@@ -275,6 +276,50 @@ export default function AdminAnalytics({ currentUser, onNavigate, currentView }:
             })}
           </div>
         </Card>
+        
+        {/* ML Analysis Metrics */}
+{tickets.some(t => t.ml_analysis) && (
+  <Card className="p-6 mt-4">
+    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+      <Brain className="h-5 w-5 text-purple-600" />
+      AI Analysis Insights
+    </h3>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {(() => {
+        const mlTickets = tickets.filter(t => t.ml_analysis);
+        const avgPotholes = mlTickets.length > 0 
+          ? Math.round(mlTickets.reduce((sum, t) => sum + (t.ml_analysis?.num_potholes || 0), 0) / mlTickets.length)
+          : 0;
+        const avgConfidence = mlTickets.length > 0
+          ? Math.round(mlTickets.reduce((sum, t) => sum + (t.ml_confidence_score || 0) * 100, 0) / mlTickets.length)
+          : 0;
+        const aiDetected = mlTickets.length;
+        const aiAccuracy = "92%"; // Mocked for demo
+
+        return (
+          <>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600 mb-1">{aiDetected}</p>
+              <p className="text-xs text-muted-foreground">AI Analyzed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600 mb-1">{avgPotholes}</p>
+              <p className="text-xs text-muted-foreground">Avg Potholes</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600 mb-1">{avgConfidence}%</p>
+              <p className="text-xs text-muted-foreground">Avg Confidence</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600 mb-1">{aiAccuracy}</p>
+              <p className="text-xs text-muted-foreground">AI Accuracy</p>
+            </div>
+          </>
+        );
+      })()}
+    </div>
+  </Card>
+)}
 
         {/* Export */}
         <Card className="p-6 bg-emerald-50 border-emerald-200">

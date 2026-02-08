@@ -62,45 +62,44 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
 
   // 3. ASYNC SUBMISSION
   const handleSubmitReport = async () => {
-    if (!formData.title || !formData.description || !formData.location) {
-      alert('Please fill in all required fields')
-      return
-    }
-
-    try {
-      const { error } = await createTicket({
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        severity: formData.severity,
-        location: formData.location,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
-        reportedBy: currentUser.name,
-        images: [], // Basic portal doesn't handle images yet
-      })
-
-      if (error) throw error
-
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        category: 'pothole',
-        severity: 'medium',
-        location: '',
-        latitude: 40.7128,
-        longitude: -74.006,
-      })
-      setShowReportForm(false)
-      alert('Incident reported successfully!')
-      // Data auto-refreshes via Realtime
-
-    } catch (err) {
-      console.error(err)
-      alert('Failed to report incident')
-    }
+  if (!formData.title || !formData.description || !formData.location) {
+    alert('Please fill in all required fields')
+    return
   }
+
+  try {
+    const { error } = await createTicket({
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      severity: formData.severity,
+      location: formData.location,
+      latitude: formData.latitude,
+      longitude: formData.longitude,
+      reportedBy: currentUser.name,
+      images: [], // Keep empty for basic version
+    })
+
+    if (error) throw error
+
+    // Reset form
+    setFormData({
+      title: '',
+      description: '',
+      category: 'pothole',
+      severity: 'medium',
+      location: '',
+      latitude: 40.7128,
+      longitude: -74.006,
+    })
+    alert('Incident reported successfully!')
+    onNavigate('home') // Navigate back to home
+
+  } catch (err) {
+    console.error(err)
+    alert('Failed to report incident')
+  }
+}
 
   // --- VIEW: HOME ---
   if (currentView === 'home') {

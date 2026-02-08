@@ -1,13 +1,63 @@
-# v0 runtime files (should only exist in preview, not in git)
+# =========================
+# v0 / Preview runtime files
+# =========================
 __v0_runtime_loader.js
 __v0_devtools.tsx
 __v0_jsx-dev-runtime.ts
 instrumentation-client.js
 instrumentation-client.ts
 
-# Common ignores
-.env.local
+# =========================
+# Node / Next.js
+# =========================
 node_modules/
 .next/
+out/
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.*
 .env*.local
+.env.local
+
+# =========================
+# Python / ML
+# =========================
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+
+# =========================
+# ML artifacts (YOLO etc.)
+# =========================
+runs/
+weights/
+*.pt
+*.onnx
+
+# =========================
+# OS / Editor junk
+# =========================
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# =========================
+# Misc
+# =========================
+coverage/
+dist/
+build/

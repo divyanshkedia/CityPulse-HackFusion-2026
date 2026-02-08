@@ -12,6 +12,8 @@ import TicketCard from '@/components/tickets/ticket-card'
 import IncidentMap from '@/components/map/incident-map'
 import { detectDuplicates } from '@/lib/duplicate-detection'
 import { calculateCityAnalytics } from '@/lib/analytics'
+import { analyzePotholeImage } from '@/lib/ml-api'
+import { submitIncidentWithML } from '@/lib/ml-integration';
 import { TimeSeriesChart, CategoryDistributionChart, SeverityDistributionChart } from '@/components/charts/incident-charts'
 import { 
   MapPin, 
@@ -136,55 +138,38 @@ export default function CitizenPortalEnhanced({ currentUser, onNavigate, current
   }
 
   // --- ML ANALYSIS LOGIC ---
-  const analyzeImageWithML = async (imageData: string) => {
-    if (!imageData) return
+  // Replace the existing analyzeImageWithML function with:
+const analyzeImageWithML = async (imageData: string) => {
+  setIsAnalyzing(true);
+  setShowMlAnalysis(true);
+  
+  try {
+    // Convert base64 to blob
+    const base64Response = await fetch(imageData);
+    const blob = await base64Response.blob();
     
-    setIsAnalyzing(true)
-    setShowMlAnalysis(true)
+    // Create File object
+    const file = new File([blob], 'captured_image.jpg', { type: 'image/jpeg' });
     
-    try {
-      // Convert base64 to blob
-      const blob = await fetch(imageData).then(r => r.blob())
-      const formData = new FormData()
-      formData.append('file', blob, 'captured_image.jpg')
-      
-      // Call your ML service (running on port 8000)
-      const response = await fetch('http://localhost:8000/analyze', {
-        method: 'POST',
-        body: formData,
-      })
-      
-      if (!response.ok) {
-        throw new Error(`ML Service error: ${response.status}`)
-      }
-      
-      const result = await response.json()
-      
-      if (result.error) {
-        throw new Error(result.error)
-      }
-      
-      // Update form with ML-determined severity
-      setFormData(prev => ({
-        ...prev,
-        severity: result.analysis.severity,
-        title: prev.title || `Pothole detected: ${result.analysis.num_potholes} holes`
-      }))
-      
-      setMlAnalysis({
-        ...result.analysis,
-        annotated_image: result.annotated_image
-      })
-      
-      console.log('ML Analysis Result:', result.analysis)
-      
-    } catch (error) {
-      console.error('ML Analysis failed:', error)
-      alert('AI analysis failed. You can still submit manually.')
-    } finally {
-      setIsAnalyzing(false)
-    }
+    // Call ML service
+    const analysis = await analyzePotholeImage(file);
+    
+    // Update form with ML-determined severity
+    setFormData(prev => ({
+      ...prev,
+      severity: analysis.severity,
+      title: prev.title || `Pothole detected: ${analysis.num_potholes} holes`
+    }));
+    
+    setMlAnalysis(analysis);
+    
+  } catch (error) {
+    console.error('ML Analysis failed:', error);
+    alert('AI analysis failed. You can still submit manually.');
+  } finally {
+    setIsAnalyzing(false);
   }
+};
 
   // --- CAMERA LOGIC ---
   const startCamera = async () => {
@@ -258,49 +243,57 @@ export default function CitizenPortalEnhanced({ currentUser, onNavigate, current
     reader.readAsDataURL(file)
   }
 
-  const handleSubmitReport = async () => {
-    if (!formData.title || !formData.description || !formData.location) {
-      alert('Please fill in all required fields')
-      return
+  // Replace ONLY the handleSubmitReport function in citizen-portal-enhanced.tsx
+
+const handleSubmitReport = async () => {
+  if (!formData.title || !formData.description || !formData.location) {
+    alert('Please fill in all required fields');
+    return;
+  }
+
+  // Validate that we have images if ML analysis was performed
+  if (uploadedImages.length === 0 && formData.category === 'pothole') {
+    alert('Please upload at least one image for pothole detection');
+    return;
+  }
+
+  try {
+    console.log('Submitting report with data:', formData);
+    console.log('Number of images:', uploadedImages.length);
+    
+    // Convert base64 images to File objects
+    const imageFiles: File[] = [];
+    for (let i = 0; i < uploadedImages.length; i++) {
+      const img = uploadedImages[i];
+      if (img.startsWith('data:')) {
+        const base64Response = await fetch(img);
+        const blob = await base64Response.blob();
+        const file = new File([blob], `image_${i}.jpg`, { type: 'image/jpeg' });
+        imageFiles.push(file);
+      }
     }
 
-    const tempTicket = {
-      ...formData,
-      id: 'temp',
-      ticketNumber: 'temp',
-      status: 'open',
-      reportedBy: currentUser.name,
-      reportedAt: new Date().toISOString(),
-      images: uploadedImages,
-      comments: [],
-      audit: [],
-      tags: [],
-      isDuplicate: false,
-    }
+    console.log('Converted to File objects:', imageFiles.length);
 
-    const matches = detectDuplicates(tempTicket as any, tickets)
-
-    if (matches.length > 0 && duplicateMatches.length === 0) {
-      setDuplicateMatches(matches)
-      return
-    }
-
-    try {
-      const { error } = await createTicket({
+    // Use the ML integration function
+    const result = await submitIncidentWithML(
+      {
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        severity: formData.severity,
         location: formData.location,
         latitude: formData.latitude,
         longitude: formData.longitude,
-        reportedBy: currentUser.name,
-        images: uploadedImages
-      })
+        reported_by: currentUser.name,
+        images: imageFiles
+      },
+      currentUser.id || 'anonymous'
+    );
 
-      if (error) throw error
-
-      onNavigate('my-reports')
+    if (result.success) {
+      console.log('Report submitted successfully:', result);
+      
+      // Reset form
       setFormData({
         title: '',
         description: '',
@@ -309,19 +302,23 @@ export default function CitizenPortalEnhanced({ currentUser, onNavigate, current
         location: '',
         latitude: 19.0760,
         longitude: 72.8777,
-      })
-      setUploadedImages([])
-      setDuplicateMatches([])
-      setMlAnalysis(null)
-      setShowMlAnalysis(false)
+      });
+      setUploadedImages([]);
+      setDuplicateMatches([]);
+      setMlAnalysis(null);
+      setShowMlAnalysis(false);
       
-      alert('✅ Report submitted successfully!')
-      
-    } catch (err) {
-      console.error('Error creating ticket:', err)
-      alert('❌ Failed to submit report. Please try again.')
+      alert('✅ Report submitted successfully! Admin will review the AI analysis.');
+      onNavigate('my-reports');
+    } else {
+      throw new Error(result.error || 'Submission failed');
     }
+    
+  } catch (err) {
+    console.error('Error creating ticket:', err);
+    alert('❌ Failed to submit report. Please try again.');
   }
+};
 
   // --- VIEW: CITY WIDE ---
   if (currentView === 'city-wide') {
@@ -935,6 +932,7 @@ export default function CitizenPortalEnhanced({ currentUser, onNavigate, current
               </button>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedTicket.title}</h2>
               <p className="text-gray-600 mb-6">{selectedTicket.ticketNumber}</p>
+              <p className="text-gray-600 mb-6">Ticket #{selectedTicket.ticketNumber}</p>  // Changed here
               <AuditTimeline auditLogs={selectedTicket.audit || []} />
             </Card>
           </div>
