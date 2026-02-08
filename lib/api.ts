@@ -186,3 +186,35 @@ export async function updateTicketAssignment(id: string, assignedTo: string) {
 
   return error
 }
+
+// Add this function to your existing api.ts file
+export async function fetchAuditLogs(): Promise<any[]> {
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select(`
+      *,
+      incident:incidents(id, title)
+    `)
+    .order('timestamp', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching audit logs:', error)
+    return []
+  }
+
+  // Map to consistent format
+  return data.map((log: any) => ({
+    id: log.id,
+    incident_id: log.incident_id,
+    ticketId: log.incident_id,
+    ticketTitle: log.incident?.title || 'N/A',
+    action: log.action,
+    actor: log.actor,
+    actorRole: log.actor_role,
+    fieldChanged: log.field_changed,
+    oldValue: log.old_value,
+    newValue: log.new_value,
+    timestamp: log.timestamp,
+    created_at: log.timestamp
+  }))
+}

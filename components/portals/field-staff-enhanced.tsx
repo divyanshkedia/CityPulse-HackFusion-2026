@@ -909,16 +909,6 @@ export default function FieldStaffEnhanced({
               <option value="on_hold">On Hold</option>
               <option value="resolved">Resolved</option>
             </select>
-            
-            <Button
-              onClick={loadData}
-              disabled={loading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
           </div>
         </div>
 

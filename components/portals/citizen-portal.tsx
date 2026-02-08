@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import TicketCard from '@/components/tickets/ticket-card'
 import AuditTimeline from '@/components/tickets/audit-timeline'
-import { MapPin, Send, RefreshCw } from 'lucide-react'
+import { MapPin, Send, RefreshCw, Sparkles } from 'lucide-react'
 
 interface CitizenPortalProps {
   currentUser: User
@@ -62,44 +62,44 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
 
   // 3. ASYNC SUBMISSION
   const handleSubmitReport = async () => {
-  if (!formData.title || !formData.description || !formData.location) {
-    alert('Please fill in all required fields')
-    return
+    if (!formData.title || !formData.description || !formData.location) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    try {
+      const { error } = await createTicket({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        severity: formData.severity,
+        location: formData.location,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        reportedBy: currentUser.name,
+        images: [], // Keep empty for basic version
+      })
+
+      if (error) throw error
+
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        category: 'pothole',
+        severity: 'medium',
+        location: '',
+        latitude: 40.7128,
+        longitude: -74.006,
+      })
+      alert('Incident reported successfully!')
+      onNavigate('home') // Navigate back to home
+
+    } catch (err) {
+      console.error(err)
+      alert('Failed to report incident')
+    }
   }
-
-  try {
-    const { error } = await createTicket({
-      title: formData.title,
-      description: formData.description,
-      category: formData.category,
-      severity: formData.severity,
-      location: formData.location,
-      latitude: formData.latitude,
-      longitude: formData.longitude,
-      reportedBy: currentUser.name,
-      images: [], // Keep empty for basic version
-    })
-
-    if (error) throw error
-
-    // Reset form
-    setFormData({
-      title: '',
-      description: '',
-      category: 'pothole',
-      severity: 'medium',
-      location: '',
-      latitude: 40.7128,
-      longitude: -74.006,
-    })
-    alert('Incident reported successfully!')
-    onNavigate('home') // Navigate back to home
-
-  } catch (err) {
-    console.error(err)
-    alert('Failed to report incident')
-  }
-}
 
   // --- VIEW: HOME ---
   if (currentView === 'home') {
@@ -107,11 +107,19 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 overflow-y-auto">
         {/* Hero Card */}
         <Card className="bg-gradient-to-r from-primary to-orange-500 text-white p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
-            Help Improve Our City
-            {loading && <RefreshCw className="h-5 w-5 animate-spin text-white/80" />}
-          </h2>
-          <p className="text-orange-50 mb-4">Report infrastructure issues and help us create a safer community</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
+                Help Improve Our City
+                {loading && <RefreshCw className="h-5 w-5 animate-spin text-white/80" />}
+              </h2>
+              <p className="text-orange-50 mb-4">Report infrastructure issues and help us create a safer community</p>
+            </div>
+            <div className="hidden md:flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm font-medium">AI-Powered Analysis</span>
+            </div>
+          </div>
           <Button onClick={() => onNavigate('report')} className="bg-white text-primary hover:bg-orange-50">
             Report an Incident
           </Button>
@@ -174,8 +182,16 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
           <Button variant="ghost" onClick={() => onNavigate('home')} className="mb-4">
             ← Back
           </Button>
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Report an Incident</h2>
-          <p className="text-muted-foreground mt-1">Help us identify and address issues quickly</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Report an Incident</h2>
+              <p className="text-muted-foreground mt-1">Help us identify and address issues quickly</p>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
+              <Sparkles className="h-3 w-3" />
+              <span>AI-Powered</span>
+            </div>
+          </div>
         </div>
 
         <Card className="p-6 space-y-4">
@@ -208,23 +224,10 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Severity */}
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="severity-select">Severity Level *</label>
-            <select 
-              id="severity-select"
-              value={formData.severity} 
-              onChange={(e) => setFormData({ ...formData, severity: e.target.value as Severity })}
-              className={inputClass}
-              aria-label="Incident severity"
-            >
-              <option value="low">Low - Minor inconvenience</option>
-              <option value="medium">Medium - Notable issue</option>
-              <option value="high">High - Significant hazard</option>
-              <option value="critical">Critical - Immediate danger</option>
-            </select>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              AI helps analyze and prioritize reports automatically
+            </p>
           </div>
 
           {/* Location */}
@@ -258,13 +261,15 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
           </div>
 
           {/* Submit Button */}
-          <Button
-            onClick={handleSubmitReport}
-            className="w-full bg-primary hover:bg-orange-600 text-white h-12 font-semibold flex items-center justify-center gap-2"
-          >
-            <Send className="h-4 w-4" />
-            Submit Report
-          </Button>
+          <div className="pt-2">
+            <Button
+              onClick={handleSubmitReport}
+              className="w-full bg-primary hover:bg-orange-600 text-white h-12 font-semibold flex items-center justify-center gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Submit Report
+            </Button>
+          </div>
         </Card>
       </div>
     )
@@ -275,7 +280,13 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
     return (
       <div className="p-4 md:p-6 max-w-4xl mx-auto overflow-y-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">My Reports</h2>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">My Reports</h2>
+            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              AI helps prioritize and analyze your reports
+            </p>
+          </div>
           <Button onClick={() => onNavigate('report')} className="bg-primary hover:bg-orange-600 text-white">
             New Report
           </Button>
