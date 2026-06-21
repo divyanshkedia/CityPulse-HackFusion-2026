@@ -74,35 +74,61 @@ A comprehensive, mobile-first incident management and ticketing platform for urb
 - **UI Components**: Shadcn/ui with custom theming
 - **Styling**: Tailwind CSS with custom design tokens
 - **Icons**: Lucide React
-- **State Management**: React Hooks & Client-Side Storage
 
-### Storage & Data
-- **Client-Side Storage**: Browser localStorage with structured schema
-- **Data Types**: TypeScript interfaces for type safety
-- **Audit System**: Immutable audit log entries on all changes
+### Backend & ML Service
+- **ML Engine**: Python, FastAPI
+- **Object Detection**: YOLOv8 (identifies potholes, garbage, water leaks, fallen trees, streetlights)
+- **Image Processing**: OpenCV, PyTorch
 
-### Build & Deployment
-- **Package Manager**: npm
-- **Build Tool**: Next.js with Turbopack
-- **Testing**: Ready for Jest/Vitest setup
-- **Linting**: ESLint configured
+### Database & Real-Time Sync
+- **Database**: Supabase PostgreSQL for live ticket persistence
+- **Real-Time Channels**: Supabase Realtime for instant dashboard updates
+- **Audit System**: Immutable audit logs on all system modifications
+
+### DevOps & Orchestration
+- **Containerization**: Docker, Docker Compose (Frontend, Backend, Prometheus, Grafana)
+- **Orchestration**: Kubernetes manifests (Deployments, LoadBalancer services, resource limits)
+- **Monitoring**: Prometheus (metrics scraping) & Grafana (visual latency dashboards)
+- **CI/CD**: GitHub Actions workflows & declarative Jenkinsfiles
+
+*For a detailed systems architecture diagram and DevOps deployment details, see **[DEVOPS.md](./DEVOPS.md)**.*
 
 ## Getting Started
 
-### Installation
+### Local Development Setup
 
-1. Clone the repository or download the project
-2. Install dependencies:
+1. Install dependencies in the root directory:
    ```bash
    npm install
    ```
 
-3. Run the development server:
+2. Run the development server:
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+3. Start the FastAPI ML service in a separate terminal:
+   ```bash
+   cd ml-service
+   pip install -r requirements.txt
+   uvicorn main:app --reload
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Docker Containerized Setup (DevOps Suite)
+
+To spin up the entire containerized architecture locally:
+1. Ensure Docker Desktop is installed and running.
+2. Run from the root directory:
+   ```bash
+   docker compose up --build
+   ```
+3. Access the deployed services:
+   - **Frontend App:** http://localhost:3000
+   - **ML Backend Engine:** http://localhost:8000
+   - **Prometheus Metrics:** http://localhost:9090
+   - **Grafana Visualization:** http://localhost:3002
 
 ### Demo Credentials
 
@@ -243,4 +269,4 @@ The application is built to be easily extensible:
 
 ## License
 
-Created with v0 - Vercel's AI assistant
+This project is licensed under the MIT License.

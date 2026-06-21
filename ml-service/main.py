@@ -15,13 +15,22 @@ logger = logging.getLogger(__name__)
 # Import after logging setup
 from yolo_infer import run_detection, model as yolo_model, CLASS_NAMES
 from severity import compute_severity
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="Civic Incident Detection API")
+
+# Instrument Prometheus metrics on startup
+Instrumentator().instrument(app).expose(app)
 
 # CORS for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

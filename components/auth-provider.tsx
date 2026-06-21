@@ -1,10 +1,10 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { User, UserRole } from '@/lib/types'
 import { useRouter } from 'next/navigation'
-
+const supabase = getSupabase()
 interface AuthContextType {
   user: User | null
   loading: boolean
@@ -32,63 +32,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          const profile = await fetchUserProfile(session.user.id)
-          if (profile) {
+    let activeUserId: string | null = null;
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const userId = session.user.id;
+        
+        // Prevent duplicate calls for the same user
+        if (activeUserId === userId) return;
+        activeUserId = userId;
+        setLoading(true);
+
+        try {
+          let profile = await fetchUserProfile(userId);
+          if (!profile) {
+             await new Promise(r => setTimeout(r, 500));
+             profile = await fetchUserProfile(userId);
+          }
+
+          if (profile && activeUserId === userId) {
             setUser({
               id: session.user.id,
               name: profile.full_name,
               email: session.user.email!,
-              role: profile.role as UserRole, 
+              role: profile.role as UserRole,
               department: 'General',
               createdAt: session.user.created_at || new Date().toISOString(),
-              lastLogin: new Date().toISOString() 
-            })
+              lastLogin: new Date().toISOString()
+            });
+          }
+        } catch (error) {
+          console.error("Profile fetch error during auth state change:", error);
+        } finally {
+          if (activeUserId === userId) {
+            setLoading(false);
           }
         }
-      } catch (error) {
-        console.error("Session check failed", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkSession()
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        let profile = await fetchUserProfile(session.user.id)
-        if (!profile) {
-           await new Promise(r => setTimeout(r, 500))
-           profile = await fetchUserProfile(session.user.id)
-        }
-
-        if (profile) {
-          setUser({
-            id: session.user.id,
-            name: profile.full_name,
-            email: session.user.email!,
-            role: profile.role as UserRole,
-            department: 'General',
-            createdAt: session.user.created_at || new Date().toISOString(),
-            lastLogin: new Date().toISOString()
-          })
-        }
       } else {
-        // If the event is SIGNED_OUT, we ensure user is null
-        setUser(null)
-        if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
-            setLoading(false) 
-        }
+        activeUserId = null;
+        setUser(null);
+        setLoading(false);
       }
-    })
+    });
 
     return () => {
-      authListener.subscription.unsubscribe()
-    }
+      authListener.subscription.unsubscribe();
+    };
   }, [])
 
   const signIn = async (email: string, pass: string) => {

@@ -1,0 +1,20 @@
+# Python env and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+ENV/
+*.log
+
+# Temporary data directories
+temp_images/
+runs/
+weights/
+*.onnx
+
+# Git
+.git
+.gitignore

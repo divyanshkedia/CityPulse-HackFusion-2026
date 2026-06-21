@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { User, Ticket, IncidentCategory, Severity, CATEGORY_LABELS } from '@/lib/types'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { fetchTickets, createTicket } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -12,6 +12,7 @@ import TicketCard from '@/components/tickets/ticket-card'
 import AuditTimeline from '@/components/tickets/audit-timeline'
 import { MapPin, Send, RefreshCw, Sparkles } from 'lucide-react'
 
+const supabase = getSupabase()
 interface CitizenPortalProps {
   currentUser: User
   onNavigate: (view: string) => void
@@ -150,7 +151,7 @@ export default function CitizenPortal({ currentUser, onNavigate, currentView }: 
           <h3 className="text-lg md:text-xl font-bold mb-4">Your Recent Reports</h3>
           {myReports.length === 0 ? (
             <Card className="p-8 text-center">
-              <p className="text-muted-foreground">You haven't reported any incidents yet</p>
+              <p className="text-muted-foreground">You haven&apos;t reported any incidents yet</p>
               <Button
                 onClick={() => onNavigate('report')}
                 className="mt-4 bg-primary hover:bg-orange-600"

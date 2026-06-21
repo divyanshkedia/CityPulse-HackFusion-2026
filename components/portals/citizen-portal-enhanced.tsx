@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { User, Ticket, IncidentCategory, Severity, CATEGORY_LABELS } from '@/lib/types'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { createTicket, fetchTickets } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -47,7 +47,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { calculateDistance } from '@/lib/utils/geoUtils'
-
+const supabase = getSupabase()
 interface CitizenPortalEnhancedProps {
   currentUser: User
   onNavigate: (view: string) => void
@@ -531,7 +531,11 @@ export default function CitizenPortalEnhanced({ currentUser, onNavigate, current
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-600 text-sm">AI Assisted</p>
-                  <p className="text-3xl font-bold text-gray-900">87%</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                     {tickets.length > 0 
+                       ? `${Math.round((tickets.filter(t => t.ml_analysis || t.ml_confidence_score || t.annotated_image_url).length / tickets.length) * 100)}%`
+                       : '0%'}
+                   </p>
                 </div>
                 <Brain className="w-12 h-12 text-purple-600" />
               </div>

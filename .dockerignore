@@ -1,0 +1,43 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Python / ML files (should not be sent to frontend container)
+ml-service/
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+runs/
+weights/
+*.pt
+*.onnx
+
+# DevOps configurations (K8s and Prometheus files)
+k8s/
+prometheus/
+.github/
+
+# Git & local config
+.git
+.gitignore
+.env
+.env.*
+.env*.local
+
+# Editor configs and junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

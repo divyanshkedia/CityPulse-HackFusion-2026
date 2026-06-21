@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { User, Ticket, IncidentCategory, Severity } from '@/lib/types'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { fetchTickets, fetchAuditLogs } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -16,7 +16,7 @@ import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
 import { calculateCityAnalytics } from '@/lib/analytics'
 import autoTable from 'jspdf-autotable'
-
+const supabase = getSupabase()
 interface AdminDashboardEnhancedProps {
   currentUser: User
   onLogout: () => void

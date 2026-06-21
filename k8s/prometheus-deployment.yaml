@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: citypulse-prometheus
+  labels:
+    app: citypulse-prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: citypulse-prometheus
+  template:
+    metadata:
+      labels:
+        app: citypulse-prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:latest
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus/
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+          name: prometheus-server-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: citypulse-prometheus-service
+spec:
+  selector:
+    app: citypulse-prometheus
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+  type: NodePort

@@ -10,7 +10,7 @@ import {
   Severity,
   UserRole,
 } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,7 @@ import {
 // Add this import at the top with your other imports
 import CalendarSchedulingModal from "../portals/CalendarSchedulingModal"; // Adjust path as needed
 import IncidentDetailModal from "../portals/IncidentDetailModal";
-
+const supabase = getSupabase()
 // Extended types for this component
 interface StaffStats {
   total: number;

@@ -10,3 +10,4 @@ supabase==1.1.1
 python-dotenv==1.0.0
 opencv-python-headless==4.9.0.80
 setuptools==70.0.0
+prometheus-fastapi-instrumentator==6.1.0

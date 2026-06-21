@@ -11,7 +11,7 @@ import {
   SEVERITY_CONFIG, 
   STATUS_CONFIG 
 } from '@/lib/types'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { fetchTickets, fetchAuditLogs } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -21,7 +21,7 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
 import './AdminAnalytics.css' // Import CSS file
-
+const supabase = getSupabase()
 interface AdminAnalyticsProps {
   currentUser: User
   onNavigate: (view: string) => void

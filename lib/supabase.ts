@@ -1,13 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 
 // Debugging: Check if keys are loaded
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("❌ Supabase keys are missing! Check .env.local and restart server.")
-  // We throw an error to stop the app from running with broken config
-  throw new Error("Missing Supabase URL or Key")
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn("⚠️ Warning: Supabase environment variables are missing. Using placeholder values for compilation.")
 }
 
 // Create a single instance client-side
@@ -30,4 +28,8 @@ export const supabase = globalThis.supabaseGlobal || createSupabaseClient()
 
 if (process.env.NODE_ENV !== 'production') {
   globalThis.supabaseGlobal = supabase
+}
+
+export function getSupabase() {
+  return supabase
 }

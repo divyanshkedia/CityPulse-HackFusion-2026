@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: citypulse-ml-service
+  labels:
+    app: citypulse-ml-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: citypulse-ml-service
+  template:
+    metadata:
+      labels:
+        app: citypulse-ml-service
+    spec:
+      containers:
+      - name: ml-service
+        image: meghdoshi/citypulse-ml-service:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: SUPABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: citypulse-config
+              key: supabase-url
+        - name: SUPABASE_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: citypulse-config
+              key: supabase-anon-key
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: citypulse-ml-service
+spec:
+  selector:
+    app: citypulse-ml-service
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP

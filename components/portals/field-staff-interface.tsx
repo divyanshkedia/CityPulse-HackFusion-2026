@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { User, Ticket, TicketStatus } from '@/lib/types'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 import { fetchTickets, updateTicketStatus } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import TicketCard from '@/components/tickets/ticket-card'
 import AuditTimeline from '@/components/tickets/audit-timeline'
 import { CheckCircle, MessageCircle, RefreshCw } from 'lucide-react'
-
+const supabase = getSupabase()
 interface FieldStaffInterfaceProps {
   currentUser: User
   onNavigate: (view: string) => void

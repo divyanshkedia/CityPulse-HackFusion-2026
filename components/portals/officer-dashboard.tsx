@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { User, Ticket, TicketStatus } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { fetchTickets } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,7 +20,7 @@ import {
   LogOut,
   Users,
 } from "lucide-react";
-
+const supabase = getSupabase()
 interface OfficerDashboardProps {
   currentUser: User;
   onNavigate: (view: string) => void;

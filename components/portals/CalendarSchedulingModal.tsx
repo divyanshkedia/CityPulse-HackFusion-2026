@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { User, Ticket } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,7 @@ import {
   Bell,
   Target,
 } from "lucide-react";
+const supabase = getSupabase()
 interface CalendarEvent {
   id: string;
   title: string;

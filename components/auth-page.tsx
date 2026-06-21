@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/components/auth-provider'
-import { supabase } from '@/lib/supabase' // <--- IMPORT ADDED
+import { getSupabase } from '@/lib/supabase' // <--- IMPORT ADDED
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Zap, Loader2, AlertCircle } from 'lucide-react'
-
+const supabase = getSupabase()
 export default function AuthPage() {
   const { signIn } = useAuth() // We only need signIn from context, we'll handle signUp manually
   const [isLogin, setIsLogin] = useState(true)

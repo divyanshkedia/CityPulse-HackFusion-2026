@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Ticket, User } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ import {
   RefreshCw,
   Bell,
 } from "lucide-react";
+const supabase = getSupabase()
 interface IncidentDetailModalProps {
   ticket: Ticket | null;
   onClose: () => void;
